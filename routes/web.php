@@ -4,8 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NewsController;
-
-use App\Http\Controllers\SubscribeController;
+use App\Http\Controllers\SubscriptionController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -23,14 +22,19 @@ Route::get('/dashboard', function () {
 // ✅ NEWS ROUTE: Fetch and render latest news in Inertia component
 Route::get('/news', [NewsController::class, 'index'])->name('news.index');
 
-// ✅ SUBSCRIBE: Show form and handle submission
+// Subscribe page
 Route::get('/subscribe', fn () => Inertia::render('Subscribe'))->name('subscribe.form');
-Route::post('/subscribe', [SubscribeController::class, 'store'])->name('subscribe.store');
+
+// Unsubscribe route (public)
+Route::get('/unsubscribe/{id}', [SubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Toggle subscription status
+    Route::post('/subscription/toggle', [SubscriptionController::class, 'toggle'])->name('subscription.toggle');
 });
 
 require __DIR__.'/auth.php';

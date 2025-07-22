@@ -6,16 +6,19 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Models\User;
 
 class DailyNewsletter extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $news;
+    public $articles;
+    public $user;
 
-    public function __construct($news)
+    public function __construct($articles, User $user)
     {
-        $this->news = $news;
+        $this->articles = $articles;
+        $this->user = $user;
     }
 
     public function build()
