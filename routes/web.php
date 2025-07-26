@@ -19,10 +19,9 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// ✅ NEWS ROUTE: Fetch and render latest news in Inertia component
 Route::get('/news', [NewsController::class, 'index'])->name('news.index');
 
-// Subscribe page
+
 Route::get('/subscribe', fn () => Inertia::render('Subscribe'))->name('subscribe.form');
 
 // Unsubscribe route (public)
