@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import NewsletterSubscriptionForm from './Partials/NewsletterSubscriptionForm';
+import NewsletterPreferencesForm from './Partials/NewsletterPreferencesForm';
 
 export default function Edit({ mustVerifyEmail, status }) {
     return (
@@ -32,6 +33,10 @@ export default function Edit({ mustVerifyEmail, status }) {
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <NewsletterSubscriptionForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <NewsletterPreferencesForm className="max-w-xl" />
                     </div>
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">

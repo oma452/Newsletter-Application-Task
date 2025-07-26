@@ -4,13 +4,15 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
+use App\Models\EmailCampaign;
+use App\Models\UserPreference;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
 class SendNewsletter extends Command
 {
-    protected $signature = 'newsletter:send';
+    protected $signature = 'newsletter:send {frequency=daily : Send to daily or weekly subscribers}';
     protected $description = 'Send daily Egypt news to subscribed users';
 
     public function handle()
@@ -75,22 +77,47 @@ class SendNewsletter extends Command
 
         $this->info('Found ' . count($filteredArticles) . ' articles about Egypt.');
         
-        // Get subscribed users only
-        $users = User::where('is_subscribed', true)->get();
+        $frequency = $this->argument('frequency');
+        
+        // Get subscribed users with preferences for the specified frequency
+        $users = User::where('is_subscribed', true)
+            ->with('preferences')
+            ->whereHas('preferences', function($query) use ($frequency) {
+                $query->where('frequency', $frequency);
+            })
+            ->orWhere(function($query) use ($frequency) {
+                // Include users without preferences if sending daily
+                return $frequency === 'daily' && $query->where('is_subscribed', true)->doesntHave('preferences');
+            })
+            ->get();
         
         if ($users->isEmpty()) {
             $this->warn('⚠️ No subscribed users found.');
             return 0;
         }
         
-        $this->info('📨 Sending newsletter to ' . $users->count() . ' subscribers...');
+        $this->info("📨 Sending {$frequency} personalized newsletter to " . $users->count() . ' subscribers...');
         
-        // Send emails to each subscribed user
+        // Create campaign record for analytics
+        $campaign = EmailCampaign::create([
+            'subject' => "📰 Your " . ucfirst($frequency) . " Egypt Newsletter",
+            'total_recipients' => $users->count(),
+            'sent_at' => now()
+        ]);
+        
+        // Send personalized emails to each subscribed user
         $failedEmails = [];
         foreach ($users as $user) {
             try {
-                Mail::to($user->email)->send(new \App\Mail\DailyNewsletter($filteredArticles, $user));
-                $this->line("✅ Sent to: {$user->email}");
+                // Filter articles based on user preferences
+                $personalizedArticles = $this->filterArticlesForUser($filteredArticles, $user);
+                
+                if (empty($personalizedArticles)) {
+                    $personalizedArticles = array_slice($filteredArticles, 0, 3); // Fallback to top 3
+                }
+                
+                Mail::to($user->email)->send(new \App\Mail\DailyNewsletter($personalizedArticles, $user, $campaign));
+                $this->line("✅ Sent to: {$user->email} ({" . count($personalizedArticles) . " articles})");
             } catch (\Exception $e) {
                 $failedEmails[] = $user->email;
                 Log::error("Failed to send newsletter to {$user->email}: {$e->getMessage()}");
@@ -104,5 +131,57 @@ class SendNewsletter extends Command
 
         $this->info('🎉 Newsletter sent to all subscribers successfully!');
         return 0;
+    }
+
+    private function filterArticlesForUser($articles, $user)
+    {
+        $preferences = $user->preferences;
+        
+        if (!$preferences) {
+            return array_slice($articles, 0, 5); // Default to 5 articles
+        }
+
+        $filteredArticles = [];
+        $categories = $preferences->categories ?? [];
+        $keywords = $preferences->keywords ?? [];
+
+        foreach ($articles as $article) {
+            $title = strtolower($article['title']);
+            $description = strtolower($article['description'] ?? '');
+            $content = $title . ' ' . $description;
+            
+            $matchesCategory = false;
+            $matchesKeyword = false;
+            
+            // Check category matches
+            if (!empty($categories)) {
+                foreach ($categories as $category) {
+                    if (str_contains($content, strtolower($category))) {
+                        $matchesCategory = true;
+                        break;
+                    }
+                }
+            } else {
+                $matchesCategory = true; // No category filter
+            }
+            
+            // Check keyword matches
+            if (!empty($keywords)) {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($content, strtolower($keyword))) {
+                        $matchesKeyword = true;
+                        break;
+                    }
+                }
+            } else {
+                $matchesKeyword = true; // No keyword filter
+            }
+            
+            if ($matchesCategory && $matchesKeyword) {
+                $filteredArticles[] = $article;
+            }
+        }
+        
+        return array_slice($filteredArticles, 0, 10); // Max 10 articles per user
     }
 }

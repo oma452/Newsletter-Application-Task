@@ -47,4 +47,9 @@ class User extends Authenticatable
             'is_subscribed' => 'boolean',
         ];
     }
+
+    public function preferences()
+    {
+        return $this->hasOne(UserPreference::class);
+    }
 }

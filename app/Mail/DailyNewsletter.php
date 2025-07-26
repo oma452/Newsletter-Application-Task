@@ -7,6 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\User;
+use App\Models\EmailCampaign;
 
 class DailyNewsletter extends Mailable
 {
@@ -14,11 +15,13 @@ class DailyNewsletter extends Mailable
 
     public $articles;
     public $user;
+    public $campaign;
 
-    public function __construct($articles, User $user)
+    public function __construct($articles, User $user, EmailCampaign $campaign)
     {
         $this->articles = $articles;
         $this->user = $user;
+        $this->campaign = $campaign;
     }
 
     public function build()

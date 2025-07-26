@@ -63,6 +63,10 @@
         <h1>📰 Daily Egypt News</h1>
         <p>Top stories about Egypt for {{ date('F j, Y') }}</p>
     </div>
+    
+    <!-- Tracking pixel for open tracking -->
+    <img src="{{ url('/track/open/' . $campaign->id . '/' . $user->id) }}" 
+         width="1" height="1" style="display:none;" alt="">
 
     @foreach($articles as $article)
     <div class="article">
@@ -83,7 +87,7 @@
             {{ $article['description'] }}
         </div>
         
-        <a href="{{ $article['url'] }}" class="read-more">Read Full Article</a>
+        <a href="{{ url('/track/click/' . $campaign->id . '/' . $user->id . '/' . base64_encode($article['url'])) }}" class="read-more">Read Full Article</a>
     </div>
     @endforeach
 
