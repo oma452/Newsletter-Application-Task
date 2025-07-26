@@ -7,9 +7,9 @@ export default function Subscribe() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post('/subscribe', {
+    post('/subscription/toggle', {
       onSuccess: () => {
-        alert('Subscribed successfully!');
+        alert('Subscription preference updated successfully!');
         reset();
       },
     });
@@ -18,23 +18,16 @@ export default function Subscribe() {
   return (
     <div className="p-6 max-w-md mx-auto bg-white rounded shadow">
       <h2 className="text-xl font-semibold mb-4">Subscribe to Newsletter</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={data.email}
-          onChange={(e) => setData('email', e.target.value)}
-          className="border p-2 w-full mb-2"
-          placeholder="Enter your email"
-        />
-        {errors.email && <div className="text-red-500 mb-2">{errors.email}</div>}
-        <button
-          type="submit"
-          disabled={processing}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Subscribe
-        </button>
-      </form>
+      <p className="mb-4">To subscribe to our newsletter, please log in to your account.</p>
+      <p className="mb-4">Once logged in, you can toggle your subscription status from your profile.</p>
+      <div className="mt-4">
+        <a href="/login" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+          Log In
+        </a>
+        <a href="/register" className="ml-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+          Register
+        </a>
+      </div>
     </div>
   );
 }

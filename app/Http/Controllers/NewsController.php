@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\News;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;

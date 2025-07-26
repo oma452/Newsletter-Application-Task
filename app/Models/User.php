@@ -6,7 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Subscriber;
 
 class User extends Authenticatable
 {
@@ -22,12 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_subscribed',
     ];
-public function subscriber()
-{
-    return $this->hasOne(Subscriber::class);
-}
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,6 +44,7 @@ public function subscriber()
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_subscribed' => 'boolean',
         ];
     }
 }
